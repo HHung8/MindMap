@@ -1,82 +1,100 @@
-"use client";
-import { useState, useCallback } from "react";
+"use client"
+import React, { useCallback, useRef } from 'react';
 import ReactFlow, {
-  Controls,
-  Background,
-  applyNodeChanges,
-  applyEdgeChanges,
+  useNodesState,
+  useEdgesState,
   addEdge,
-  MiniMap,
-} from "reactflow";
-import "reactflow/dist/style.css";
+  useReactFlow,
+  ReactFlowProvider,
+  Background,
+  Controls,
+  MiniMap
+} from 'reactflow';
+import 'reactflow/dist/style.css';
 
 const initialNodes = [
   {
-    id: "1",
-    data: { label: "Hello" },
-    position: { x: 0, y: 0 },
-    type: "input",
-  },
-  {
-    id: "2",
-    data: { label: "World" },
-    position: { x: 100, y: 100 },
+    id: '0',
+    type: 'input',
+    data: { label: 'Node' },
+    position: { x: 0, y: 50 },
   },
 ];
 
-const initialEdges = [];
+let id = 1;
+const getId = () => `${id++}`;
 
-function Flow() {
-  const [nodes, setNodes] = useState(initialNodes);
-  const [edges, setEdges] = useState(initialEdges);
-
-  const onNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
-  );
-
+const AddNodeOnEdgeDrop = () => {
+  const reactFlowWrapper = useRef(null);
+  const connectingNodeId = useRef(null);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const { screenToFlowPosition } = useReactFlow();
   const onConnect = useCallback(
     (params) => {
-      // Add a new node on connect
-      const newNode = {
-        id: (nodes.length + 1).toString(),
-        data: { label: `New Node ${nodes.length + 1}` },
-        position: { x: Math.random() * 200, y: Math.random() * 200 },
-      };
-
-      setNodes((nds) => nds.concat(newNode));
-      setEdges((eds) => addEdge(params, eds));
+      // reset the start node on connections
+      connectingNodeId.current = null;
+      setEdges((eds) => addEdge(params, eds))
     },
-    [nodes]
+    [],
   );
 
-  const onElementsRemove = useCallback(
-    (elementsToRemove) => {
-      // Filter out nodes that are being removed
-      const filteredNodes = nodes.filter(
-        (node) => !elementsToRemove.find((el) => el.id === node.id)
-      );
-      setNodes(filteredNodes);
+  const onConnectStart = useCallback((_, { nodeId }) => {
+    connectingNodeId.current = nodeId;
+  }, []);
+
+  const onConnectEnd = useCallback(
+    (event) => {
+      if (!connectingNodeId.current) return;
+
+      const targetIsPane = event.target.classList.contains('react-flow__pane');
+
+      if (targetIsPane) {
+        // we need to remove the wrapper bounds, in order to get the correct position
+        const id = getId();
+        const newNode = {
+          id,
+          position: screenToFlowPosition({
+            x: event.clientX,
+            y: event.clientY,
+          }),
+          data: { label: `Node ${id}` },
+          origin: [0.5, 0.0],
+        };
+
+        setNodes((nds) => nds.concat(newNode));
+        setEdges((eds) =>
+          eds.concat({ id, source: connectingNodeId.current, target: id }),
+        );
+      }
     },
-    [nodes]
+    [screenToFlowPosition],
   );
 
   return (
-    <div style={{ height: "60vh" }}>
-      <ReactFlow
-        nodes={nodes}
-        onNodesChange={onNodesChange}
-        edges={edges}
-        onConnect={onConnect}
-        onElementsRemove={onElementsRemove}
-        fitView
-      >
-        <Background />
-        <Controls />
-        <MiniMap />
-      </ReactFlow>
+    <div className="wrapper" style={{height: "60vh"}}  >
+         <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onConnectStart={onConnectStart}
+            onConnectEnd={onConnectEnd}
+            fitView
+            fitViewOptions={{ padding: 2 }}
+            nodeOrigin={[0.5, 0]}
+          >
+            <Background />
+            <Controls />
+            <MiniMap />
+          </ReactFlow>
     </div>
   );
-}
+};
 
-export default Flow;
+export default () => (
+  <ReactFlowProvider>
+    <AddNodeOnEdgeDrop />
+  </ReactFlowProvider>
+);
