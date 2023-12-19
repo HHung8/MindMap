@@ -1,5 +1,5 @@
-"use client"
-import React, { useCallback, useRef } from 'react';
+"use client";
+import React, { useCallback, useRef, useState } from 'react';
 import ReactFlow, {
   useNodesState,
   useEdgesState,
@@ -11,6 +11,7 @@ import ReactFlow, {
   MiniMap
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import NodeUpdateForm from './NodeUpdate';
 
 const initialNodes = [
   {
@@ -25,6 +26,8 @@ let id = 1;
 const getId = () => `${id++}`;
 
 const AddNodeOnEdgeDrop = () => {
+  const [selectedNodeId, setSelectedNodeId] = useState(null);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
   const reactFlowWrapper = useRef(null);
   const connectingNodeId = useRef(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -50,51 +53,77 @@ const AddNodeOnEdgeDrop = () => {
       const targetIsPane = event.target.classList.contains('react-flow__pane');
 
       if (targetIsPane) {
-        // we need to remove the wrapper bounds, in order to get the correct position
-        const id = getId();
+        const newId = getId();
         const newNode = {
-          id,
+          id: newId,
           position: screenToFlowPosition({
             x: event.clientX,
             y: event.clientY,
           }),
-          data: { label: `Node ${id}` },
+          data: { label: `Node ${newId}` },
           origin: [0.5, 0.0],
         };
 
         setNodes((nds) => nds.concat(newNode));
         setEdges((eds) =>
-          eds.concat({ id, source: connectingNodeId.current, target: id }),
+          eds.concat({ id: newId, source: connectingNodeId.current, target: newId })
         );
       }
     },
-    [screenToFlowPosition],
+    [screenToFlowPosition]
+  );
+
+  const onNodeDoubleClick = useCallback(
+    (_, { nodeId }) => {
+      setSelectedNodeId(nodeId);
+      setShowUpdateForm(true);
+    },
+    []
   );
 
   return (
-    <div className="wrapper" style={{height: "60vh"}}  >
-         <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onConnectStart={onConnectStart}
-            onConnectEnd={onConnectEnd}
-            fitView
-            fitViewOptions={{ padding: 2 }}
-            nodeOrigin={[0.5, 0]}
-          >
-            <Background />
-            <Controls />
-            <MiniMap />
-          </ReactFlow>
+    <div className="wrapper" style={{ height: "60vh" }}  >
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onConnectStart={onConnectStart}
+        onConnectEnd={onConnectEnd}
+        onNodeDoubleClick={onNodeDoubleClick}
+        fitView
+        fitViewOptions={{ padding: 2 }}
+        nodeOrigin={[0.5, 0]}
+      >
+        <Background />
+        <Controls />
+        <MiniMap />
+      </ReactFlow>
+
+      {showUpdateForm && (
+        <NodeUpdateForm
+          nodeId={selectedNodeId}
+          onClose={() => setShowUpdateForm(false)}
+          onUpdate={(updatedData) => {
+            console.log('Updated data received:', updatedData);
+            setNodes((prevNodes) =>
+              prevNodes.map((node) =>
+                node.id === selectedNodeId ? { ...node, data: updatedData } : node
+              )
+            );
+            setShowUpdateForm(false);
+          }}
+        />
+      )}
     </div>
   );
 };
 
-export default () => (
+const App = () => (
   <ReactFlowProvider>
     <AddNodeOnEdgeDrop />
   </ReactFlowProvider>
 );
+
+export default App;
