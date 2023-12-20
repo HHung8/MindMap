@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import React, { useCallback, useRef, useState } from 'react';
 import ReactFlow, {
   useNodesState,
@@ -7,11 +7,10 @@ import ReactFlow, {
   useReactFlow,
   ReactFlowProvider,
   Background,
+  MiniMap,
   Controls,
-  MiniMap
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import NodeUpdateForm from './NodeUpdate';
 
 const initialNodes = [
   {
@@ -26,16 +25,15 @@ let id = 1;
 const getId = () => `${id++}`;
 
 const AddNodeOnEdgeDrop = () => {
-  const [selectedNodeId, setSelectedNodeId] = useState(null);
-  const [showUpdateForm, setShowUpdateForm] = useState(false);
   const reactFlowWrapper = useRef(null);
   const connectingNodeId = useRef(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const { screenToFlowPosition } = useReactFlow();
+  const [selectedNodeId, setSelectedNodeId] = useState(null);
+
   const onConnect = useCallback(
     (params) => {
-      // reset the start node on connections
       connectingNodeId.current = null;
       setEdges((eds) => addEdge(params, eds))
     },
@@ -53,36 +51,56 @@ const AddNodeOnEdgeDrop = () => {
       const targetIsPane = event.target.classList.contains('react-flow__pane');
 
       if (targetIsPane) {
-        const newId = getId();
+        const id = getId();
         const newNode = {
-          id: newId,
+          id,
           position: screenToFlowPosition({
             x: event.clientX,
             y: event.clientY,
           }),
-          data: { label: `Node ${newId}` },
+          data: { label: `Node ${id}` },
           origin: [0.5, 0.0],
         };
 
         setNodes((nds) => nds.concat(newNode));
         setEdges((eds) =>
-          eds.concat({ id: newId, source: connectingNodeId.current, target: newId })
+          eds.concat({ id, source: connectingNodeId.current, target: id }),
         );
       }
     },
-    [screenToFlowPosition]
+    [screenToFlowPosition],
   );
 
-  const onNodeDoubleClick = useCallback(
-    (_, { nodeId }) => {
-      setSelectedNodeId(nodeId);
-      setShowUpdateForm(true);
+  const onNodeClick = useCallback(
+    (event, node) => {
+      event.preventDefault();
+      setSelectedNodeId(node.id);
     },
-    []
+    [setSelectedNodeId],
+  );
+
+  const onInputBlur = useCallback(() => {
+    setSelectedNodeId(null);
+  }, [setSelectedNodeId]);
+
+  const onInputChange = useCallback(
+    (event) => {
+      const updatedNodes = nodes.map((node) => {
+        if (node.id === selectedNodeId) {
+          return {
+            ...node,
+            data: { ...node.data, label: event.target.value },
+          };
+        }
+        return node;
+      });
+      setNodes(updatedNodes);
+    },
+    [nodes, selectedNodeId, setNodes],
   );
 
   return (
-    <div className="wrapper" style={{ height: "60vh" }}  >
+    <div className="wrapper" ref={reactFlowWrapper} style={{ height: "60vh" }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -91,28 +109,29 @@ const AddNodeOnEdgeDrop = () => {
         onConnect={onConnect}
         onConnectStart={onConnectStart}
         onConnectEnd={onConnectEnd}
-        onNodeDoubleClick={onNodeDoubleClick}
+        onNodeClick={onNodeClick}
         fitView
         fitViewOptions={{ padding: 2 }}
         nodeOrigin={[0.5, 0]}
       >
+        <MiniMap />
         <Background />
         <Controls />
-        <MiniMap />
       </ReactFlow>
-
-      {showUpdateForm && (
-        <NodeUpdateForm
-          nodeId={selectedNodeId}
-          onClose={() => setShowUpdateForm(false)}
-          onUpdate={(updatedData) => {
-            console.log('Updated data received:', updatedData);
-            setNodes((prevNodes) =>
-              prevNodes.map((node) =>
-                node.id === selectedNodeId ? { ...node, data: updatedData } : node
-              )
-            );
-            setShowUpdateForm(false);
+      {selectedNodeId && (
+        <input
+          type="text"
+          value={nodes.find((node) => node.id === selectedNodeId)?.data.label || ''}
+          onChange={onInputChange}
+          onBlur={onInputBlur}
+          style={{
+            position: "absolute",
+            top: '0',
+            background: "gray",
+            color: "white",
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)'
           }}
         />
       )}
@@ -125,5 +144,4 @@ const App = () => (
     <AddNodeOnEdgeDrop />
   </ReactFlowProvider>
 );
-
 export default App;

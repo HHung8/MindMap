@@ -50,3 +50,17 @@
   flex-grow: 1;
   height: 100%;
 }
+
+.text-updater-node {
+  height: 56px;
+  border: 1px solid #eee;
+  padding: -2px;
+  border-radius: 5px;
+  background: white;
+}
+
+.text-updater-node label {
+  display: block;
+  color: #777;
+  font-size: 8px;
+}
