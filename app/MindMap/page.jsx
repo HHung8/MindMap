@@ -18,7 +18,7 @@ import 'reactflow/dist/style.css';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useShareHandler from './ShareHandler';
-import { faSave, faShare } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faSave, faShare, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 const initialNodes = [
   {
@@ -39,6 +39,14 @@ const AddNodeOnEdgeDrop = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const { screenToFlowPosition } = useReactFlow();
   const [selectedNodeId, setSelectedNodeId] = useState(null);
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const toggleModal = () => {
+    setModalVisible(!modalVisible);
+  };
+  const closeModal = () => {
+    setModalVisible(false)
+  }
 
   const shareableLink = useShareHandler(nodes, edges); 
   const handleClickSave = () => {
@@ -62,9 +70,7 @@ const AddNodeOnEdgeDrop = () => {
   const onConnectEnd = useCallback(
     (event) => {
       if (!connectingNodeId.current) return;
-
       const targetIsPane = event.target.classList.contains('react-flow__pane');
-
       if (targetIsPane) {
         const id = getId();
         const newNode = {
@@ -131,14 +137,15 @@ const AddNodeOnEdgeDrop = () => {
                             rel="noopener"
                           >
                             <FontAwesomeIcon icon={faSave} />
-                            <span className='ml-2'>Lưu thay đổi</span>
+                            <span className='ml-2'>Save</span>
                           </button>
-                          <button className="border-2 duration-200 ease inline-flex items-center mb-1 mr-1 transition py-1 px-2 text-white border-blue-600 bg-blue-600 hover:bg-blue-700 hover:border-blue-700" 
+                          <button className="border-2 duration-200 ease inline-flex items-center mb-1 mr-1 transition py-1 px-2 text-sm rounded text-white border-blue-600 bg-blue-600 hover:bg-blue-700 hover:border-blue-700" 
                             target="_blank"
-                            rel="noopenr"
+                            onClick={toggleModal}
+                            rel="noopener"
                           >
                             <FontAwesomeIcon icon={faShare} />
-                            <span className="ml-2">Chia sẻ</span>
+                            <span className="ml-2">Share</span>
                           </button>
                        </div>
                   </div>
@@ -181,6 +188,45 @@ const AddNodeOnEdgeDrop = () => {
           }}
         />
       )}
+     </div>
+     <div className={`fixed z-10 overflow-y-auto top-10 w-full left-0 ${modalVisible ? 'block' : 'hidden'}`} id="modal" >
+          <div className="flex items-center justify-center min-height-100vh pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+              <div className="fixed inset-0 transition-opacity">
+                  <div className="absolute bg-gray-900 inset-0 opacity-75"></div>
+                  <span className="hidden sm:inline-block sm:align-middle sm:h-screen"></span>
+                  <div className="inline-block align-center bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                      <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:p-4">
+                          <div className="mx-auto max-w-sm text-center flex flex-wrap justify-center share-option">
+                              <div className="flex items-center mr-4 mb-4">
+                                  <input id="radio1" type="radio" value="private" name="mode" className="hidden"/>
+                                  <label for="radio1" className="flex items-center cursor-pointer">
+                                      <span className="w-4 h-4 inline-block mr-1 rounded-full border border-grey"></span>
+                                      Riêng tư 
+                                  </label>
+                              </div>
+                              <div className="flex items-center mr-4 mb-4">
+                                  <input id="radio2" type="radio" value="private" name="mode" className="hidden"/>
+                                  <label for="radio2" className="flex items-center cursor-pointer">
+                                      <span className="w-4 h-4 inline-block mr-1 rounded-full border border-grey"></span>
+                                      Công khai
+                                  </label>
+                              </div>
+                          </div>
+                          <div>Nếu chọn riêng tư, chỉ có bạn mới được quyền xem MindMap này</div>
+                      </div>
+                      <div className="bg-gray-200 px-4 py-3 text-right">
+                          <button type="button" className="py-2 px-4 bg-gray-500 text-white rounded hover:bg-gray-700 mr-2" onClick={closeModal}>
+                            <FontAwesomeIcon icon={faXmark} className="mr-2" />
+                             Đóng
+                          </button>
+                          <button type="submit" onClick={handleClickSave} className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-700 mr-2">
+                             <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                             Lưu Lại 
+                          </button>
+                      </div>
+                  </div>
+              </div>
+          </div>
      </div>
      <ToastContainer />
     </div>
