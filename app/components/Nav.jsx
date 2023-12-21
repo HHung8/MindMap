@@ -10,6 +10,7 @@ const Nav = () => {
           <Link href="/Feature">Tính năng</Link>
           <Link href="/Course">Bảng giá</Link>
           <Link href="/Contact">Liên hệ</Link>
+          <Link href="/Login">MindMap</Link>
           <Link href="/api/auth/login">Login</Link>
         </div>
       </nav>
