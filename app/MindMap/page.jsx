@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import {} from "@fortawesome/free-brands-svg-icons";
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import ReactFlow, {
   useNodesState,
   useEdgesState,
@@ -13,18 +13,23 @@ import ReactFlow, {
   Background,
   MiniMap,
   Controls,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import useShareHandler from './ShareHandler';
-import { faPlus, faSave, faShare, faXmark } from "@fortawesome/free-solid-svg-icons";
+} from "reactflow";
+import "reactflow/dist/style.css";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import useShareHandler from "./ShareHandler";
+import {
+  faPlus,
+  faSave,
+  faShare,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 
 const initialNodes = [
   {
-    id: '0',
-    type: 'input',
-    data: { label: 'Node' },
+    id: "0",
+    type: "input",
+    data: { label: "MindMap" },
     position: { x: 0, y: 50 },
   },
 ];
@@ -39,29 +44,36 @@ const AddNodeOnEdgeDrop = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const { screenToFlowPosition } = useReactFlow();
   const [selectedNodeId, setSelectedNodeId] = useState(null);
-
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedOption, setSelectedOption] = useState("private");
+
   const toggleModal = () => {
     setModalVisible(!modalVisible);
   };
+
   const closeModal = () => {
-    setModalVisible(false)
-  }
+    setModalVisible(false);
+  };
 
-  const shareableLink = useShareHandler(nodes, edges); 
+  const handleOptionChange = (option) => {
+    setSelectedOption(option);
+  };
+
+  useEffect(() => {
+    setSelectedOption("private");
+  }, []);
+
+  const shareableLink = useShareHandler(nodes, edges);
   const handleClickSave = () => {
-    toast.success('Đã lưu thành công!', {
+    toast.success("Đã lưu thành công!", {
       position: toast.POSITION.TOP_RIGHT,
-    })
-  }
+    });
+  };
 
-  const onConnect = useCallback(
-    (params) => {
-      connectingNodeId.current = null;  
-      setEdges((eds) => addEdge(params, eds))
-    },
-    [],
-  );
+  const onConnect = useCallback((params) => {
+    connectingNodeId.current = null;
+    setEdges((eds) => addEdge(params, eds));
+  }, []);
 
   const onConnectStart = useCallback((_, { nodeId }) => {
     connectingNodeId.current = nodeId;
@@ -70,7 +82,7 @@ const AddNodeOnEdgeDrop = () => {
   const onConnectEnd = useCallback(
     (event) => {
       if (!connectingNodeId.current) return;
-      const targetIsPane = event.target.classList.contains('react-flow__pane');
+      const targetIsPane = event.target.classList.contains("react-flow__pane");
       if (targetIsPane) {
         const id = getId();
         const newNode = {
@@ -79,17 +91,17 @@ const AddNodeOnEdgeDrop = () => {
             x: event.clientX,
             y: event.clientY,
           }),
-          data: { label: `Node ${id}` },
+          data: { label: `Text ${id}` },
           origin: [0.5, 0.0],
         };
 
         setNodes((nds) => nds.concat(newNode));
         setEdges((eds) =>
-          eds.concat({ id, source: connectingNodeId.current, target: id }),
+          eds.concat({ id, source: connectingNodeId.current, target: id })
         );
       }
     },
-    [screenToFlowPosition],
+    [screenToFlowPosition]
   );
 
   const onNodeClick = useCallback(
@@ -97,7 +109,7 @@ const AddNodeOnEdgeDrop = () => {
       event.preventDefault();
       setSelectedNodeId(node.id);
     },
-    [setSelectedNodeId],
+    [setSelectedNodeId]
   );
 
   const onInputBlur = useCallback(() => {
@@ -117,118 +129,212 @@ const AddNodeOnEdgeDrop = () => {
       });
       setNodes(updatedNodes);
     },
-    [nodes, selectedNodeId, setNodes],
+    [nodes, selectedNodeId, setNodes]
   );
 
   return (
-    <div className='py-5 mx-auto'>
-      <div className='text-start' >
-          <div className='container mx-auto' >
-              <div className='flex flex-wrap'>
-                  <div className='w-4/5'> 
-                        <h1 className='text-2xl md:text-4xl font-medium my-2 outline-0' contentEditable="true" spellCheck="false">Mindmap không có tên</h1>
-                        <p className='outline-0' contentEditable="true" spellCheck="false">Chưa có mô tả</p>
-                  </div>
-                  <div className='w-1/5'>
-                       <div className='flex justify-end items-center'>
-                          <button className= 'border-2 duration-200 ease inline-flex items-center mb-1 mr-1 transition py-1 px-2 text-sm rounded text-white border-green-600 bg-green-600 hover:bg-green-700 hover:border-green-700' 
-                           onClick={handleClickSave}
-                           target="_blank"
-                            rel="noopener"
-                          >
-                            <FontAwesomeIcon icon={faSave} />
-                            <span className='ml-2'>Save</span>
-                          </button>
-                          <button className="border-2 duration-200 ease inline-flex items-center mb-1 mr-1 transition py-1 px-2 text-sm rounded text-white border-blue-600 bg-blue-600 hover:bg-blue-700 hover:border-blue-700" 
-                            target="_blank"
-                            onClick={toggleModal}
-                            rel="noopener"
-                          >
-                            <FontAwesomeIcon icon={faShare} />
-                            <span className="ml-2">Share</span>
-                          </button>
-                       </div>
-                  </div>
+    <div className="py-5 mx-auto">
+      <div className="text-start">
+        <div className="container mx-auto">
+          <div className="flex flex-wrap">
+            <div className="w-4/5">
+              <h1
+                className="text-2xl md:text-4xl font-medium my-2 outline-0"
+                contentEditable="true"
+                spellCheck="false"
+              >
+                Mindmap không có tên
+              </h1>
+              <p
+                className="outline-0"
+                contentEditable="true"
+                spellCheck="false"
+              >
+                Chưa có mô tả
+              </p>
+            </div>
+            <div className="w-1/5">
+              <div className="flex justify-end items-center">
+                <button
+                  className="border-2 duration-200 ease inline-flex items-center mb-1 mr-1 transition py-1 px-2 text-sm rounded text-white border-green-600 bg-green-600 hover:bg-green-700 hover:border-green-700"
+                  onClick={handleClickSave}
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <FontAwesomeIcon icon={faSave} />
+                  <span className="ml-2">Save</span>
+                </button>
+                <button
+                  className="border-2 duration-200 ease inline-flex items-center mb-1 mr-1 transition py-1 px-2 text-sm rounded text-white border-blue-600 bg-blue-600 hover:bg-blue-700 hover:border-blue-700"
+                  target="_blank"
+                  onClick={toggleModal}
+                  rel="noopener"
+                >
+                  <FontAwesomeIcon icon={faShare} />
+                  <span className="ml-2">Share</span>
+                </button>
               </div>
+            </div>
           </div>
+        </div>
       </div>
-     <div className="wrapper" ref={reactFlowWrapper} style={{ height: "50vh", position:'relative' }}>
-     <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        onConnectStart={onConnectStart}
-        onConnectEnd={onConnectEnd}
-        onNodeClick={onNodeClick}
-        fitView
-        fitViewOptions={{ padding: 2 }}
-        nodeOrigin={[0.5, 0]}
+      <div
+        className="wrapper"
+        ref={reactFlowWrapper}
+        style={{ height: "50vh", position: "relative" }}
       >
-        <MiniMap />
-        <Background />
-        <Controls />
-      </ReactFlow>
-    
-      {selectedNodeId && (
-        <input
-          type="text"
-          value={nodes.find((node) => node.id === selectedNodeId)?.data.label || ''}
-          onChange={onInputChange}
-          onBlur={onInputBlur}
-          style={{
-            position: "absolute",
-            top: '20px',
-            background: "#fff",
-            color: "#000",
-            border: '1px solid #000',
-            right: '0',
-            padding: '10px'
-          }}
-        />
-      )}
-     </div>
-     <div className={`fixed z-10 overflow-y-auto top-10 w-full left-0 ${modalVisible ? 'block' : 'hidden'}`} id="modal" >
-          <div className="flex items-center justify-center min-height-100vh pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-              <div className="fixed inset-0 transition-opacity">
-                  <div className="absolute bg-gray-900 inset-0 opacity-75"></div>
-                  <span className="hidden sm:inline-block sm:align-middle sm:h-screen"></span>
-                  <div className="inline-block align-center bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                      <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:p-4">
-                          <div className="mx-auto max-w-sm text-center flex flex-wrap justify-center share-option">
-                              <div className="flex items-center mr-4 mb-4">
-                                  <input id="radio1" type="radio" value="private" name="mode" className="hidden"/>
-                                  <label for="radio1" className="flex items-center cursor-pointer">
-                                      <span className="w-4 h-4 inline-block mr-1 rounded-full border border-grey"></span>
-                                      Riêng tư 
-                                  </label>
-                              </div>
-                              <div className="flex items-center mr-4 mb-4">
-                                  <input id="radio2" type="radio" value="private" name="mode" className="hidden"/>
-                                  <label for="radio2" className="flex items-center cursor-pointer">
-                                      <span className="w-4 h-4 inline-block mr-1 rounded-full border border-grey"></span>
-                                      Công khai
-                                  </label>
-                              </div>
-                          </div>
-                          <div>Nếu chọn riêng tư, chỉ có bạn mới được quyền xem MindMap này</div>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onConnectStart={onConnectStart}
+          onConnectEnd={onConnectEnd}
+          onNodeClick={onNodeClick}
+          fitView
+          fitViewOptions={{ padding: 2 }}
+          nodeOrigin={[0.5, 0]}
+        >
+          <MiniMap />
+          <Background />
+          <Controls />
+        </ReactFlow>
+
+        {selectedNodeId && (
+          <input
+            type="text"
+            value={
+              nodes.find((node) => node.id === selectedNodeId)?.data.label || ""
+            }
+            onChange={onInputChange}
+            onBlur={onInputBlur}
+            style={{
+              position: "absolute",
+              top: "20px",
+              background: "#fff",
+              color: "#000",
+              border: "1px solid #000",
+              right: "0",
+              padding: "10px",
+              resize: "none",
+            }}
+          />
+        )}
+      </div>
+      <div
+        className={`fixed z-10 overflow-y-auto top-10 w-full left-0 ${
+          modalVisible ? "block" : "hidden"
+        }`}
+        id="modal"
+      >
+        <div className="flex items-center justify-center min-height-100vh pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+          <div className="fixed inset-0 transition-opacity">
+            <div className="absolute bg-gray-900 inset-0 opacity-75"></div>
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen"></span>
+            <div className="inline-block align-center bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:p-4">
+                <div className="w-full">
+                    <div className="flex text-center justify-center">
+                      <div className="flex items-center mr-4 mb-4">
+                        <input
+                          id="radio1"
+                          type="radio"
+                          value="private"
+                          name="mode"
+                          className="hidden"
+                          checked={selectedOption === "private"}
+                          onClick={() => handleOptionChange("private")}
+                        />
+                        <label
+                          for="radio1"
+                          className="flex items-center cursor-pointer"
+                          onClick={() => handleOptionChange("private")}
+                        >
+                          <span className="w-4 h-4 inline-block mr-1 rounded-full border border-grey"></span>
+                          Riêng tư
+                        </label>
                       </div>
-                      <div className="bg-gray-200 px-4 py-3 text-right">
-                          <button type="button" className="py-2 px-4 bg-gray-500 text-white rounded hover:bg-gray-700 mr-2" onClick={closeModal}>
-                            <FontAwesomeIcon icon={faXmark} className="mr-2" />
-                             Đóng
-                          </button>
-                          <button type="submit" onClick={handleClickSave} className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-700 mr-2">
-                             <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                             Lưu Lại 
-                          </button>
+                      <div className="flex items-center mr-4 mb-4">
+                        <input
+                          id="radio2"
+                          type="radio"
+                          value="private"
+                          name="mode"
+                          className="hidden"
+                          checked={selectedOption === "public"}
+                          onClick={() => handleOptionChange("public")}
+                        />
+                        <label
+                          for="radio2"
+                          className="flex items-center cursor-pointer"
+                          onClick={() => handleOptionChange("public")}
+                        >
+                          <span className="w-4 h-4 inline-block mr-1 rounded-full border border-grey"></span>
+                          Công khai
+                        </label>
                       </div>
-                  </div>
+                    </div>
+                  {selectedOption === "private" && (
+                    <div>
+                      <p>Nếu chọn riêng tư, chỉ có bạn mới được quyền xem MindMap này</p>
+                    </div>
+                  )}
+                  {selectedOption === "public" && (
+                    <>
+                      <div className="w-fill">
+                        <label for="share-input">Liên kết chia sẻ</label>
+                        <input
+                          id="share-input"
+                          className="peer h-10 w-full rounded-md bg-gray-50 drop-shadow-sm transition-all duration-200 ease-in-out focus:bg-white focus:ring-2 focus:ring-blue-400 outline-none"
+                          type="url"
+                          readOnly
+                        />
+                      </div>
+                      <div className="group relative mt-3">
+                        <label>Tiêu đề </label>
+                        <input
+                          className="peer h-10 w-full rounded-md bg-gray-50 px-4 drop-shadow-sm transition-all duration-200 ease-in-out focus:ring-2 focus:ring-blue-400 outline-none"
+                          type="url"
+                          placeholder="MindMap không tên"
+                        />
+                      </div>
+                      <div className="group relative mt-3">
+                        <label>Mô tả</label>
+                        <textarea className="peer h-20 w-full rounded-md bg-gray-50 px-4 drop-shadow-sm transition-all duration-200 ease-in-out focus:bg-white focus:ring-2 forcus:ring-blue-400 outline-none"/>
+                      </div>
+                      <div className="group ralative mt-3">
+                        <label>Ảnh chia sẻ</label>
+                        <input className="peer h-10 w-full rounded-md bg-gray-50 px-4 drop-shadow-sm transition-all duration-200 ease-in-out focus:bg-white focus:ring-2 focus:ring-blue-400 outline-none" />
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
+              
+              <div className="bg-gray-200 px-4 py-3 text-right">
+                <button
+                  type="button"
+                  className="py-2 px-4 bg-gray-500 text-white rounded hover:bg-gray-700 mr-2"
+                  onClick={closeModal}
+                >
+                  <FontAwesomeIcon icon={faXmark} className="mr-2" />
+                  Đóng
+                </button>
+                <button
+                  type="submit"
+                  onClick={handleClickSave}
+                  className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-700 mr-2"
+                >
+                  <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                  Lưu Lại
+                </button>
+              </div>
+            </div>
           </div>
-     </div>
-     <ToastContainer />
+        </div>
+      </div>
+      <ToastContainer />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 "use client"
 import Link from "next/link";
 import { useUser } from "@auth0/nextjs-auth0/client";
+
 const Login = () => {
   const { user, error, isLoading } = useUser();
   if (isLoading) return <div>Loading...</div>;
@@ -30,7 +31,7 @@ const Login = () => {
   }
   return (
     <div>
-      <h1 className="flex text-center justify-center m-5 from-neutral-700"> Vui Lòng Đăng Nhập Để Vào MindMap </h1>
+      <h1 className="flex text-center justify-center m-5 text-gray-600 font-semibold text-lg"> Vui Lòng Đăng Nhập Để Vào MindMap </h1>
     </div>
   )
 }
