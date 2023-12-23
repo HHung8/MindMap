@@ -13,13 +13,6 @@ const Login = () => {
         <h2 className="text-blue-700"> Hi {user.name}</h2>
         <div className="flex">
           <Link
-            href="/api/auth/logout"
-            className="bg-red-600 text-white px-6 p-2 m-4 rounded-md"
-          >
-            Logout
-          </Link>
-          <br />
-          <Link
             href="/MindMap"
             className="bg-blue-900 text-white px-6 p-2 m-4 rounded-md"
           >

@@ -1,8 +1,5 @@
 "use client";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { library } from "@fortawesome/fontawesome-svg-core";
-import {} from "@fortawesome/free-brands-svg-icons";
 import React, { useCallback, useRef, useState, useEffect } from "react";
 import ReactFlow, {
   useNodesState,
@@ -46,6 +43,8 @@ const AddNodeOnEdgeDrop = () => {
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedOption, setSelectedOption] = useState("private");
+  const shareableLink = useShareHandler(nodes, edges);
+
 
   const toggleModal = () => {
     setModalVisible(!modalVisible);
@@ -63,11 +62,10 @@ const AddNodeOnEdgeDrop = () => {
     setSelectedOption("private");
   }, []);
 
-  const shareableLink = useShareHandler(nodes, edges);
   const handleClickSave = () => {
     toast.success("Đã lưu thành công!", {
       position: toast.POSITION.TOP_RIGHT,
-    });
+    })
   };
 
   const onConnect = useCallback((params) => {
@@ -288,6 +286,7 @@ const AddNodeOnEdgeDrop = () => {
                           id="share-input"
                           className="peer h-10 w-full rounded-md bg-gray-50 drop-shadow-sm transition-all duration-200 ease-in-out focus:bg-white focus:ring-2 focus:ring-blue-400 outline-none"
                           type="url"
+                          value="http://localhost:3000/MindMap"
                           readOnly
                         />
                       </div>
@@ -311,7 +310,7 @@ const AddNodeOnEdgeDrop = () => {
                   )}
                 </div>
               </div>
-              
+
               <div className="bg-gray-200 px-4 py-3 text-right">
                 <button
                   type="button"
