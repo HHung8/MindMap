@@ -47,9 +47,9 @@ const Login = () => {
       id: mindMaps.length + 1,
       name: "MindMap Không Có Tên",
       description: "Chưa có mô tả",
-      createdAt: new Date().toLocaleDateString(),
+      createdAt: new Date().toLocaleString(),
     };
-    const updatedMindMaps = [...mindMaps, newMindMap];
+    const updatedMindMaps = [...mindMaps, newMindMap];  
     saveToLocalStorage(updatedMindMaps);
   };
   
@@ -70,11 +70,11 @@ const Login = () => {
     return (
       <div className="container px-4 mx-auto">
         <div className="text-start">
-          <h3 className="text-3xl md:text-4xl font-medium my-2">MindMap của tôi</h3>
+          <h3 className="text-3xl md:text-4xl font-medium my-2">私のマインドマップ</h3>
           <div className="flex py-4"> 
             <Link href="/MindMap">
               <div className="bg-blue-900 text-white px-6 p-2 rounded-md" onClick={handleAddMindMap}>
-                Thêm mới
+                新しく追加する
               </div>
             </Link>
           </div>
@@ -84,13 +84,13 @@ const Login = () => {
                 <input  type="checkbox" />
               </span>
               <span className="w-1/2">
-                <span className="text-xs uppercase text-gray-600 font-bold">Tên</span>
+                <span className="text-lg uppercase text-gray-600 font-bold">名前</span>
               </span>
               <span className="w-1/4">
-                <span className="text-xs uppercase text-gray-600 font-bold">Tạo lúc</span>
+                <span className="text-lg uppercase text-gray-600 font-bold">時間を作る</span>
               </span>
               <span className="w-1/4">
-                <span className="text-xs uppercase text-gray-600 font-bold">Hành động</span>
+                <span className="text-lg uppercase text-gray-600 font-bold">高度</span>
               </span>
             </div>
             {mindMaps.map((map) => (
@@ -138,11 +138,12 @@ const Login = () => {
       </div>
     );
   }
-  
+
   // Nếu chưa đăng nhập
   return (
     <div>
       <h1 className="flex text-center justify-center m-5 text-gray-600 font-semibold text-lg"> Vui Lòng Đăng Nhập Để Vào MindMap </h1>
+      <h1 className="flex text-center justify-center m-5 text-gray-600 font-semibold text-lg">ログインしてマインドマップにアクセス</h1>
     </div>
   );
 };

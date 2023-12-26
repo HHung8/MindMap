@@ -152,14 +152,14 @@ const AddNodeOnEdgeDrop = () => {
                 contentEditable="true"
                 spellCheck="false"
               >
-                Mindmap không có tên
+                マインドマップに名前はない
               </h1>
               <p
                 className="outline-0"
                 contentEditable="true"
                 spellCheck="false"
               >
-                Chưa có mô tả
+                まだ説明がありません
               </p>
             </div>
             <div className="w-1/5">
