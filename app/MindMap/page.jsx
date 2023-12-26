@@ -21,7 +21,7 @@ import {
   faShare,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-
+  
 const initialNodes = [
   {
     id: "0",
@@ -44,8 +44,7 @@ const AddNodeOnEdgeDrop = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedOption, setSelectedOption] = useState("private");
   const shareableLink = useShareHandler(nodes, edges);
-
-
+  
   const toggleModal = () => {
     setModalVisible(!modalVisible);
   };
@@ -77,22 +76,26 @@ const AddNodeOnEdgeDrop = () => {
     connectingNodeId.current = nodeId;
   }, []);
 
+  const MAX_LABEL_LENGTH = 20; // Số ký tự tối đa cho Label
+
   const onConnectEnd = useCallback(
     (event) => {
       if (!connectingNodeId.current) return;
       const targetIsPane = event.target.classList.contains("react-flow__pane");
       if (targetIsPane) {
         const id = getId();
+        const newLabel = `Text ${id}`;
+        const truncatedLabel = newLabel.length > MAX_LABEL_LENGTH ? newLabel.substring(0, MAX_LABEL_LENGTH) : newLabel;
         const newNode = {
           id,
           position: screenToFlowPosition({
             x: event.clientX,
             y: event.clientY,
           }),
-          data: { label: `Text ${id}` },
+          data: { label: truncatedLabel},
           origin: [0.5, 0.0],
+          fullLabel: newLabel
         };
-
         setNodes((nds) => nds.concat(newNode));
         setEdges((eds) =>
           eds.concat({ id, source: connectingNodeId.current, target: id })
@@ -116,15 +119,23 @@ const AddNodeOnEdgeDrop = () => {
 
   const onInputChange = useCallback(
     (event) => {
+      const inputValue = event.target.value;
+      const maxLength = MAX_LABEL_LENGTH;
+      const updatedLabel =
+        inputValue.length > maxLength
+          ? inputValue.substring(0, maxLength)
+          : inputValue;
+  
       const updatedNodes = nodes.map((node) => {
         if (node.id === selectedNodeId) {
           return {
             ...node,
-            data: { ...node.data, label: event.target.value },
+            data: { ...node.data, label: updatedLabel },
           };
         }
         return node;
       });
+  
       setNodes(updatedNodes);
     },
     [nodes, selectedNodeId, setNodes]
@@ -207,6 +218,7 @@ const AddNodeOnEdgeDrop = () => {
             }
             onChange={onInputChange}
             onBlur={onInputBlur}
+            maxLength={MAX_LABEL_LENGTH}
             style={{
               position: "absolute",
               top: "20px",
@@ -216,7 +228,13 @@ const AddNodeOnEdgeDrop = () => {
               right: "0",
               padding: "10px",
               resize: "none",
+              maxWidth: "200px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              maxWidth: "300px"
             }}
+            className="node-input"
           />
         )}
       </div>
@@ -286,7 +304,7 @@ const AddNodeOnEdgeDrop = () => {
                           id="share-input"
                           className="peer h-10 w-full rounded-md bg-gray-50 drop-shadow-sm transition-all duration-200 ease-in-out focus:bg-white focus:ring-2 focus:ring-blue-400 outline-none"
                           type="url"
-                          value="http://localhost:3000/MindMap"
+                          value="https://mind-map-rosy.vercel.app/MindMap"
                           readOnly
                         />
                       </div>
