@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 const Login = () => {
   const { user, error, isLoading } = useUser();
   const [mindMaps, setMindMaps] = useState([]);
-
   // Load dữ liệu từ localStorage khi trang được render
   useEffect(() => {
     const storedMindMaps = localStorage.getItem('mindMaps');
@@ -35,13 +34,11 @@ const Login = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
-
   const saveToLocalStorage = (data) => {
     localStorage.setItem('mindMaps', JSON.stringify(data));
     setMindMaps(data);
   };
-
-  // Hàm thêm 1 MINDMAP
+  // Hàm thêm 1 MINDMAP  
   const handleAddMindMap = () => {
     const newMindMap = {
       id: mindMaps.length + 1,
@@ -52,19 +49,15 @@ const Login = () => {
     const updatedMindMaps = [...mindMaps, newMindMap];  
     saveToLocalStorage(updatedMindMaps);
   };
-  
   // Hàm xoá 1 mindMap
   const handleDeleteMindMap = (id) => {
     const filteredMindMaps = mindMaps.filter(map => map.id !== id);
     saveToLocalStorage(filteredMindMaps);
   };
-
   // Trường hợp đang loading, hiển thị thông báo "Loading..."
   if (isLoading) return <div>Loading...</div>;
-
   // Trường hợp có lỗi, hiển thị thông báo lỗi
   if (error) return <div>{error.message}</div>;
-
   // Nếu đã đăng nhập
   if (user) {
     return (

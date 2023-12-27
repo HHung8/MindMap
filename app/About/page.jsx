@@ -24,6 +24,7 @@ const About = () => {
             width={100}
             height={100}
             layout="responsive"
+            alt="Image1"
           />
         </div>
       </div>
@@ -49,6 +50,7 @@ const About = () => {
                 src="https://images.unsplash.com/photo-1520341280432-4749d4d7bcf9?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                 width={10}
                 height={10}
+                alt="Image2"
                 layout="responsive"
               />
               <p className="font-medium text-xl leading-5 text-gray-800 mt-4">
@@ -60,6 +62,7 @@ const About = () => {
                 src="https://images.unsplash.com/photo-1525134479668-1bee5c7c6845?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                 width={10}
                 height={10}
+                alt="Image3"
                 layout="responsive"
               />
               <p className="font-medium text-xl leading-5 text-gray-800 mt-4">
@@ -71,6 +74,7 @@ const About = () => {
                 src="https://images.unsplash.com/photo-1541271696563-3be2f555fc4e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDE5fHx8ZW58MHx8fHx8"
                 width={10}
                 height={10}
+                alt="Image4"
                 layout="responsive"
               />
               <p className="font-medium text-xl leading-5 text-gray-800 mt-4">
@@ -82,6 +86,7 @@ const About = () => {
                 src="https://images.unsplash.com/photo-1526449870103-234e4c371681?q=80&w=1707&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                 width={10}
                 height={10}
+                alt="Image5"
                 layout="responsive"
               />
               <p className="font-medium text-xl leading-5 text-gray-800 mt-4">

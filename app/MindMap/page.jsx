@@ -22,6 +22,7 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
   
+// Khởi tạo node 
 const initialNodes = [
   {
     id: "0",
@@ -31,6 +32,7 @@ const initialNodes = [
   },
 ];
 
+// Thêm node khi kéo thả 
 let id = 1;
 const getId = () => `${id++}`;
 
@@ -66,7 +68,6 @@ const AddNodeOnEdgeDrop = () => {
       position: toast.POSITION.TOP_RIGHT,
     })
   };
-
   const onConnect = useCallback((params) => {
     connectingNodeId.current = null;
     setEdges((eds) => addEdge(params, eds));
@@ -103,7 +104,7 @@ const AddNodeOnEdgeDrop = () => {
       }
     },
     [screenToFlowPosition]
-  );
+  );                     
 
   const onNodeClick = useCallback(
     (event, node) => {
@@ -121,7 +122,7 @@ const AddNodeOnEdgeDrop = () => {
     (event) => {
       const inputValue = event.target.value;
       const maxLength = MAX_LABEL_LENGTH;
-      const updatedLabel =
+      const updatedLabel = 
         inputValue.length > maxLength
           ? inputValue.substring(0, maxLength)
           : inputValue;
