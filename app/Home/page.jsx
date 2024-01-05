@@ -1,5 +1,4 @@
 import Image from "next/image";
-
 const Home = () => {
   return (
     <div className="bg-indigo-100 py-6 md:py-12">

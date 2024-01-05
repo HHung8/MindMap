@@ -63,7 +63,14 @@ const Login = () => {
     return (
       <div className="container px-4 mx-auto">
         <div className="text-start">
-          <h3 className="text-3xl md:text-4xl font-medium my-2">私のマインドマップ</h3>
+         <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-3xl md:text-4xl font-medium my-2">私のマインドマップ</h3>   
+            </div>
+            <div className="px-10 py-2 rounded-md bg-red-600">
+              <Link href="/api/auth/logout" className="text-white">Logout</Link>
+            </div>
+         </div>
           <div className="flex py-4"> 
             <Link href="/MindMap">
               <div className="bg-blue-900 text-white px-6 p-2 rounded-md" onClick={handleAddMindMap}>
