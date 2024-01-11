@@ -21,7 +21,8 @@ import {
   faShare,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-  
+import { nanoid } from "nanoid";
+
 // Khởi tạo node 
 const initialNodes = [
   {
@@ -46,7 +47,25 @@ const AddNodeOnEdgeDrop = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedOption, setSelectedOption] = useState("private");
   const shareableLink = useShareHandler(nodes, edges);
+  const [unsavedChanges, setUnsavedChanges] = useState(false);
   
+  const handleUnsavedChanges = useCallback((event) => {
+    if (unsavedChanges) {
+      const message = "You have unsaved changes. Are you sure you want to leave?";
+      event.returnValue = message; // Standard for most browsers
+      return message; // For some older browsers
+    }
+  }, [unsavedChanges]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => handleUnsavedChanges(event);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [handleUnsavedChanges]);
+
+
   const toggleModal = () => {
     setModalVisible(!modalVisible);
   };
@@ -64,10 +83,27 @@ const AddNodeOnEdgeDrop = () => {
   }, []);
 
   const handleClickSave = () => {
+    const savedData = {
+      nodes: nodes.map((node) => ({
+        id: node.id,
+        label: node.data.label,
+        // Add other properties as needed
+      })),
+      edges: edges.map((edge) => ({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        // Add other properties as needed
+      })),
+    };
+    // Use the savedData as needed (e.g., send it to a server or save to localStorage)
+    console.log("Saved Data:", savedData);
     toast.success("Đã lưu thành công!", {
       position: toast.POSITION.TOP_RIGHT,
-    })
-  };
+    });
+    setUnsavedChanges(false);
+  };  
+
   const onConnect = useCallback((params) => {
     connectingNodeId.current = null;
     setEdges((eds) => addEdge(params, eds));
@@ -82,6 +118,7 @@ const AddNodeOnEdgeDrop = () => {
   const onConnectEnd = useCallback(
     (event) => {
       if (!connectingNodeId.current) return;
+      const id = nanoid(); // Generate a unique ID
       const targetIsPane = event.target.classList.contains("react-flow__pane");
       if (targetIsPane) {
         const id = getId();
@@ -353,7 +390,7 @@ const AddNodeOnEdgeDrop = () => {
         </div>
       </div>
       <ToastContainer />
-    </div>
+    </div>  
   );
 };
 

@@ -1,79 +1,101 @@
 "use client";
+
+// pages/Login.js
 import Link from "next/link";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
+import { nanoid } from "nanoid";
+// import { useRouter } from 'next/router';
 
 const Login = () => {
   const { user, error, isLoading } = useUser();
   const [mindMaps, setMindMaps] = useState([]);
-  // Load dữ liệu từ localStorage khi trang được render
+  const [newMindMap, setNewMindMap] = useState(null);
+  // const router = useRouter();
+
   useEffect(() => {
-    const storedMindMaps = localStorage.getItem('mindMaps');
+    const storedMindMaps = localStorage.getItem("mindMaps");
     if (storedMindMaps) {
       setMindMaps(JSON.parse(storedMindMaps));
     }
-  }, []);
 
-  // Effect để load lại dữ liệu khi quay lại từ trang MindMap
-  useEffect(() => {
     const loadMindMaps = () => {
-      const storedMindMaps = localStorage.getItem('mindMaps');
+      const storedMindMaps = localStorage.getItem("mindMaps");
       if (storedMindMaps) {
         setMindMaps(JSON.parse(storedMindMaps));
       }
     };
+
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === "visible") {
         loadMindMaps();
       }
     };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
+
   const saveToLocalStorage = (data) => {
-    localStorage.setItem('mindMaps', JSON.stringify(data));
+    localStorage.setItem("mindMaps", JSON.stringify(data));
     setMindMaps(data);
   };
-  // Hàm thêm 1 MINDMAP  
-  const handleAddMindMap = () => {
-    const newMindMap = {
-      id: mindMaps.length + 1,
+
+  const handleAddMindMap = async () => {
+    const newMap = {
+      id: nanoid(),
       name: "MindMap Không Có Tên",
       description: "Chưa có mô tả",
       createdAt: new Date().toLocaleString(),
     };
-    const updatedMindMaps = [...mindMaps, newMindMap];  
+
+    setNewMindMap(newMap);
+    // Lưu dữ liệu của mỗi mindmap riêng biệt
+    const updatedMindMaps = [...mindMaps, newMap];
+    saveToLocalStorage(updatedMindMaps);
+
+    // Sử dụng Next.js router để chuyển hướng đến trang `MindMap` với `id` của mindmap mới
+    // router.push(`/MindMap/${newMap.id}`);
+  };
+
+  const handleDeleteMindMap = (id) => {
+    // Lọc mindmap cần xóa
+    const updatedMindMaps = mindMaps.filter((map) => map && map.id !== id);
+    setMindMaps(updatedMindMaps);
+  
+    // Lưu lại dữ liệu sau khi xóa
     saveToLocalStorage(updatedMindMaps);
   };
-  // Hàm xoá 1 mindMap
-  const handleDeleteMindMap = (id) => {
-    const filteredMindMaps = mindMaps.filter(map => map.id !== id);
-    saveToLocalStorage(filteredMindMaps);
-  };
-  // Trường hợp đang loading, hiển thị thông báo "Loading..."
+
   if (isLoading) return <div>Loading...</div>;
-  // Trường hợp có lỗi, hiển thị thông báo lỗi
   if (error) return <div>{error.message}</div>;
-  // Nếu đã đăng nhập
   if (user) {
     return (
       <div className="container px-4 mx-auto">
         <div className="text-start">
-         <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-3xl md:text-4xl font-medium my-2">私のマインドマップ</h3>   
+              <h3 className="text-3xl md:text-4xl font-medium my-2">
+                私のマインドマップ
+              </h3>
             </div>
             <div className="px-10 py-2 rounded-md bg-red-600">
-              <Link href="/api/auth/logout" className="text-white">Logout</Link>
+              <Link href="/api/auth/logout" className="text-white">
+                Logout
+              </Link>
             </div>
-         </div>
-          <div className="flex py-4"> 
+          </div>
+          <div className="flex py-4">
             <Link href="/MindMap">
-              <div className="bg-blue-900 text-white px-6 p-2 rounded-md" onClick={handleAddMindMap}>
+              <div
+                className="bg-blue-900 text-white px-6 p-2 rounded-md"
+                onClick={handleAddMindMap}
+              >
                 新しく追加する
               </div>
             </Link>
@@ -81,42 +103,54 @@ const Login = () => {
           <div className="px-4">
             <div className="flex items-center py-2">
               <span className="w-1/6 text-center">
-                <input  type="checkbox" />
+                <input type="checkbox" />
               </span>
               <span className="w-1/2">
-                <span className="text-lg uppercase text-gray-600 font-bold">名前</span>
+                <span className="text-lg uppercase text-gray-600 font-bold">
+                  名前
+                </span>
               </span>
               <span className="w-1/4">
-                <span className="text-lg uppercase text-gray-600 font-bold">時間を作る</span>
+                <span className="text-lg uppercase text-gray-600 font-bold">
+                  時間を作る
+                </span>
               </span>
               <span className="w-1/4">
-                <span className="text-lg uppercase text-gray-600 font-bold">高度</span>
+                <span className="text-lg uppercase text-gray-600 font-bold">
+                  高度
+                </span>
               </span>
             </div>
             {mindMaps.map((map) => (
-              <div key={map.id} className="hover:bg-gray-200 cursor-pointer bg-white shadow flex items-center mb-5 rounded-lg">
-                <div className="w-1/6 text-center">
-                  <input type="checkbox"/>
-                </div>
-                <div className="w-1/2">
-                  <Link href="/MindMap">
+              <div
+                key={map?.id ?? 'defaultId'}
+                className="hover:bg-gray-200 cursor-pointer bg-white shadow flex items-center mb-5 rounded-lg"
+              >
+                <span className="w-1/6 text-center">
+                  <input type="checkbox" />
+                </span>
+                <span className="w-1/2">
+                  <Link href={`/MindMap`}>
                     <div className="flex items-center ml-4">
                       <div>
                         <span className="capitalize block text-gray-800">
-                          {map.name}
+                            {map?.name ?? "MindMap Không Có Tên"}
                         </span>
                         <span className="text-sm block text-gray-600">
-                          {map.description}
+                            {map?.description ?? "Chưa có mô tả"}
+                        </span>           
+                        <span className="text-xs block text-gray-400">
+                            ID: {map?.id ?? "N/A"}
                         </span>
                       </div>
                     </div>
                   </Link>
-                </div>
-                <div className="w-1/4">
-                  <span className="text-gray-600 text-sm">{map.createdAt}</span>
-                </div>
-                <div className="w-1/4 flex">
-                  <Link href="/MindMap">
+                </span>
+                <span className="w-1/4">
+                <span className="text-gray-600 text-sm">{map?.createdAt ?? "N/A"}</span>
+                </span>
+                <span className="w-1/4 flex">
+                  <Link href={`/MindMap`}>
                     <div className="flex items-center">
                       <FontAwesomeIcon
                         icon={faPenToSquare}
@@ -124,13 +158,16 @@ const Login = () => {
                       />
                     </div>
                   </Link>
-                    <div className="flex items-center" onClick={() => handleDeleteMindMap(map.id)} >
-                      <FontAwesomeIcon
-                        icon={faTrash}
-                        className="text-gray-600 text-sm px-2 cursor-pointer"
-                      />
-                    </div>
-                </div>
+                  <div
+                    className="flex items-center"
+                    onClick={() => handleDeleteMindMap(map.id)}
+                  >
+                    <FontAwesomeIcon
+                      icon={faTrash}
+                      className="text-gray-600 text-sm px-2 cursor-pointer"
+                    />
+                  </div>
+                </span>
               </div>
             ))}
           </div>
@@ -139,13 +176,16 @@ const Login = () => {
     );
   }
 
-  // Nếu chưa đăng nhập
   return (
     <div>
-      <h1 className="flex text-center justify-center m-5 text-gray-600 font-semibold text-lg"> Vui Lòng Đăng Nhập Để Vào MindMap </h1>
-      <h1 className="flex text-center justify-center m-5 text-gray-600 font-semibold text-lg">ログインしてマインドマップにアクセス</h1>
+      <h1 className="flex text-center justify-center m-5 text-gray-600 font-semibold text-lg">
+        Vui Lòng Đăng Nhập Để Vào MindMap{" "}
+      </h1>
+      <h1 className="flex text-center justify-center m-5 text-gray-600 font-semibold text-lg">
+        ログインしてマインドマップにアクセス
+      </h1>
     </div>
   );
 };
-  
+
 export default Login;
