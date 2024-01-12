@@ -14,7 +14,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import useShareHandler from "./ShareHandler";
+import useShareHandler from "../ShareHandler";
 import {
   faPlus,
   faSave,
@@ -23,7 +23,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { nanoid } from "nanoid";
 
-// Khởi tạo node 
+// Khởi tạo node
 const initialNodes = [
   {
     id: "0",
@@ -33,7 +33,7 @@ const initialNodes = [
   },
 ];
 
-// Thêm node khi kéo thả 
+// Thêm node khi kéo thả
 let id = 1;
 const getId = () => `${id++}`;
 
@@ -48,14 +48,18 @@ const AddNodeOnEdgeDrop = () => {
   const [selectedOption, setSelectedOption] = useState("private");
   const shareableLink = useShareHandler(nodes, edges);
   const [unsavedChanges, setUnsavedChanges] = useState(false);
-  
-  const handleUnsavedChanges = useCallback((event) => {
-    if (unsavedChanges) {
-      const message = "You have unsaved changes. Are you sure you want to leave?";
-      event.returnValue = message; // Standard for most browsers
-      return message; // For some older browsers
-    }
-  }, [unsavedChanges]);
+
+  const handleUnsavedChanges = useCallback(
+    (event) => {
+      if (unsavedChanges) {
+        const message =
+          "You have unsaved changes. Are you sure you want to leave?";
+        event.returnValue = message; // Standard for most browsers
+        return message; // For some older browsers
+      }
+    },
+    [unsavedChanges]
+  );
 
   useEffect(() => {
     const handleBeforeUnload = (event) => handleUnsavedChanges(event);
@@ -64,7 +68,6 @@ const AddNodeOnEdgeDrop = () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [handleUnsavedChanges]);
-
 
   const toggleModal = () => {
     setModalVisible(!modalVisible);
@@ -86,7 +89,8 @@ const AddNodeOnEdgeDrop = () => {
     const savedData = {
       nodes: nodes.map((node) => ({
         id: node.id,
-        label: node.data.label,
+        data: node.data,
+        position: node.position,
         // Add other properties as needed
       })),
       edges: edges.map((edge) => ({
@@ -96,13 +100,17 @@ const AddNodeOnEdgeDrop = () => {
         // Add other properties as needed
       })),
     };
-    // Use the savedData as needed (e.g., send it to a server or save to localStorage)
+
+    // Save to localStorage
+    localStorage.setItem("mindMapData", JSON.stringify(savedData));
+
     console.log("Saved Data:", savedData);
     toast.success("Đã lưu thành công!", {
       position: toast.POSITION.TOP_RIGHT,
     });
+
     setUnsavedChanges(false);
-  };  
+  };
 
   const onConnect = useCallback((params) => {
     connectingNodeId.current = null;
@@ -123,16 +131,19 @@ const AddNodeOnEdgeDrop = () => {
       if (targetIsPane) {
         const id = getId();
         const newLabel = `Text ${id}`;
-        const truncatedLabel = newLabel.length > MAX_LABEL_LENGTH ? newLabel.substring(0, MAX_LABEL_LENGTH) : newLabel;
+        const truncatedLabel =
+          newLabel.length > MAX_LABEL_LENGTH
+            ? newLabel.substring(0, MAX_LABEL_LENGTH)
+            : newLabel;
         const newNode = {
           id,
           position: screenToFlowPosition({
             x: event.clientX,
             y: event.clientY,
           }),
-          data: { label: truncatedLabel},
+          data: { label: truncatedLabel },
           origin: [0.5, 0.0],
-          fullLabel: newLabel
+          fullLabel: newLabel,
         };
         setNodes((nds) => nds.concat(newNode));
         setEdges((eds) =>
@@ -141,7 +152,7 @@ const AddNodeOnEdgeDrop = () => {
       }
     },
     [screenToFlowPosition]
-  );                     
+  );
 
   const onNodeClick = useCallback(
     (event, node) => {
@@ -159,11 +170,11 @@ const AddNodeOnEdgeDrop = () => {
     (event) => {
       const inputValue = event.target.value;
       const maxLength = MAX_LABEL_LENGTH;
-      const updatedLabel = 
+      const updatedLabel =
         inputValue.length > maxLength
           ? inputValue.substring(0, maxLength)
           : inputValue;
-  
+
       const updatedNodes = nodes.map((node) => {
         if (node.id === selectedNodeId) {
           return {
@@ -173,7 +184,7 @@ const AddNodeOnEdgeDrop = () => {
         }
         return node;
       });
-  
+
       setNodes(updatedNodes);
     },
     [nodes, selectedNodeId, setNodes]
@@ -270,7 +281,7 @@ const AddNodeOnEdgeDrop = () => {
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
-              maxWidth: "300px"
+              maxWidth: "300px",
             }}
             className="node-input"
           />
@@ -289,49 +300,52 @@ const AddNodeOnEdgeDrop = () => {
             <div className="inline-block align-center bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:p-4">
                 <div className="w-full">
-                    <div className="flex text-center justify-center">
-                      <div className="flex items-center mr-4 mb-4">
-                        <input
-                          id="radio1"
-                          type="radio"
-                          value="private"
-                          name="mode"
-                          className="hidden"
-                          checked={selectedOption === "private"}
-                          onClick={() => handleOptionChange("private")}
-                        />
-                        <label
-                          for="radio1"
-                          className="flex items-center cursor-pointer"
-                          onClick={() => handleOptionChange("private")}
-                        >
-                          <span className="w-4 h-4 inline-block mr-1 rounded-full border border-grey"></span>
-                          Riêng tư
-                        </label>
-                      </div>
-                      <div className="flex items-center mr-4 mb-4">
-                        <input
-                          id="radio2"
-                          type="radio"
-                          value="private"
-                          name="mode"
-                          className="hidden"
-                          checked={selectedOption === "public"}
-                          onClick={() => handleOptionChange("public")}
-                        />
-                        <label
-                          for="radio2"
-                          className="flex items-center cursor-pointer"
-                          onClick={() => handleOptionChange("public")}
-                        >
-                          <span className="w-4 h-4 inline-block mr-1 rounded-full border border-grey"></span>
-                          Công khai
-                        </label>
-                      </div>
+                  <div className="flex text-center justify-center">
+                    <div className="flex items-center mr-4 mb-4">
+                      <input
+                        id="radio1"
+                        type="radio"
+                        value="private"
+                        name="mode"
+                        className="hidden"
+                        checked={selectedOption === "private"}
+                        onClick={() => handleOptionChange("private")}
+                      />
+                      <label
+                        for="radio1"
+                        className="flex items-center cursor-pointer"
+                        onClick={() => handleOptionChange("private")}
+                      >
+                        <span className="w-4 h-4 inline-block mr-1 rounded-full border border-grey"></span>
+                        Riêng tư
+                      </label>
                     </div>
+                    <div className="flex items-center mr-4 mb-4">
+                      <input
+                        id="radio2"
+                        type="radio"
+                        value="private"
+                        name="mode"
+                        className="hidden"
+                        checked={selectedOption === "public"}
+                        onClick={() => handleOptionChange("public")}
+                      />
+                      <label
+                        for="radio2"
+                        className="flex items-center cursor-pointer"
+                        onClick={() => handleOptionChange("public")}
+                      >
+                        <span className="w-4 h-4 inline-block mr-1 rounded-full border border-grey"></span>
+                        Công khai
+                      </label>
+                    </div>
+                  </div>
                   {selectedOption === "private" && (
                     <div>
-                      <p>Nếu chọn riêng tư, chỉ có bạn mới được quyền xem MindMap này</p>
+                      <p>
+                        Nếu chọn riêng tư, chỉ có bạn mới được quyền xem MindMap
+                        này
+                      </p>
                     </div>
                   )}
                   {selectedOption === "public" && (
@@ -356,7 +370,7 @@ const AddNodeOnEdgeDrop = () => {
                       </div>
                       <div className="group relative mt-3">
                         <label>Mô tả</label>
-                        <textarea className="peer h-20 w-full rounded-md bg-gray-50 px-4 drop-shadow-sm transition-all duration-200 ease-in-out focus:bg-white focus:ring-2 forcus:ring-blue-400 outline-none"/>
+                        <textarea className="peer h-20 w-full rounded-md bg-gray-50 px-4 drop-shadow-sm transition-all duration-200 ease-in-out focus:bg-white focus:ring-2 forcus:ring-blue-400 outline-none" />
                       </div>
                       <div className="group ralative mt-3">
                         <label>Ảnh chia sẻ</label>
@@ -390,7 +404,7 @@ const AddNodeOnEdgeDrop = () => {
         </div>
       </div>
       <ToastContainer />
-    </div>  
+    </div>
   );
 };
 

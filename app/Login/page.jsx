@@ -55,19 +55,21 @@ const Login = () => {
     };
 
     setNewMindMap(newMap);
-    // Lưu dữ liệu của mỗi mindmap riêng biệt
     const updatedMindMaps = [...mindMaps, newMap];
     saveToLocalStorage(updatedMindMaps);
 
-    // Sử dụng Next.js router để chuyển hướng đến trang `MindMap` với `id` của mindmap mới
-    // router.push(`/MindMap/${newMap.id}`);
+    // Construct the link with the dynamic ID
+    const link = `/MindMap/${newMap.id}`;
+
+    // Use window.location.href to navigate
+    window.location.href = link;
   };
 
   const handleDeleteMindMap = (id) => {
     // Lọc mindmap cần xóa
     const updatedMindMaps = mindMaps.filter((map) => map && map.id !== id);
     setMindMaps(updatedMindMaps);
-  
+
     // Lưu lại dữ liệu sau khi xóa
     saveToLocalStorage(updatedMindMaps);
   };
@@ -91,14 +93,12 @@ const Login = () => {
             </div>
           </div>
           <div className="flex py-4">
-            <Link href="/MindMap">
-              <div
-                className="bg-blue-900 text-white px-6 p-2 rounded-md"
-                onClick={handleAddMindMap}
-              >
-                新しく追加する
-              </div>
-            </Link>
+            <div
+              className="bg-blue-900 text-white px-6 p-2 rounded-md"
+              onClick={handleAddMindMap}
+            >
+              新しく追加する
+            </div>
           </div>
           <div className="px-4">
             <div className="flex items-center py-2">
@@ -123,31 +123,33 @@ const Login = () => {
             </div>
             {mindMaps.map((map) => (
               <div
-                key={map?.id ?? 'defaultId'}
+                key={map?.id ?? "defaultId"}
                 className="hover:bg-gray-200 cursor-pointer bg-white shadow flex items-center mb-5 rounded-lg"
               >
                 <span className="w-1/6 text-center">
                   <input type="checkbox" />
                 </span>
                 <span className="w-1/2">
-                  <Link href={`/MindMap`}>
+                  <Link href={`/MindMap/${map.id}`}>
                     <div className="flex items-center ml-4">
                       <div>
                         <span className="capitalize block text-gray-800">
-                            {map?.name ?? "MindMap Không Có Tên"}
+                          {map?.name ?? "MindMap Không Có Tên"}
                         </span>
                         <span className="text-sm block text-gray-600">
-                            {map?.description ?? "Chưa có mô tả"}
-                        </span>           
+                          {map?.description ?? "Chưa có mô tả"}
+                        </span>
                         <span className="text-xs block text-gray-400">
-                            ID: {map?.id ?? "N/A"}
+                          ID: {map?.id ?? "N/A"}
                         </span>
                       </div>
                     </div>
                   </Link>
                 </span>
                 <span className="w-1/4">
-                <span className="text-gray-600 text-sm">{map?.createdAt ?? "N/A"}</span>
+                  <span className="text-gray-600 text-sm">
+                    {map?.createdAt ?? "N/A"}
+                  </span>
                 </span>
                 <span className="w-1/4 flex">
                   <Link href={`/MindMap`}>
