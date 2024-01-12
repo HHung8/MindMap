@@ -94,7 +94,7 @@ const Login = () => {
           </div>
           <div className="flex py-4">
             <div
-              className="bg-blue-900 text-white px-6 p-2 rounded-md"
+              className="bg-blue-900 text-white px-6 p-2 rounded-md cursor-pointer"
               onClick={handleAddMindMap}
             >
               新しく追加する
@@ -139,9 +139,6 @@ const Login = () => {
                         <span className="text-sm block text-gray-600">
                           {map?.description ?? "Chưa có mô tả"}
                         </span>
-                        <span className="text-xs block text-gray-400">
-                          ID: {map?.id ?? "N/A"}
-                        </span>
                       </div>
                     </div>
                   </Link>
@@ -152,7 +149,7 @@ const Login = () => {
                   </span>
                 </span>
                 <span className="w-1/4 flex">
-                  <Link href={`/MindMap`}>
+                  <Link href={`/MindMap/${map.id}`}>
                     <div className="flex items-center">
                       <FontAwesomeIcon
                         icon={faPenToSquare}
