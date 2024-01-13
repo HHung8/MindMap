@@ -21,7 +21,7 @@ import {
   faShare,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-import { nanoid } from "nanoid";
+import { v4 as uuidv4 } from "uuid";
 
 // Khởi tạo node
 const initialNodes = [
@@ -38,8 +38,11 @@ let id = 1;
 const getId = () => `${id++}`;
 
 const AddNodeOnEdgeDrop = () => {
-  const reactFlowWrapper = useRef(null);
+  // Refs for handling the React Flow
+  const reactFlowWrapper = useRef(null);  
   const connectingNodeId = useRef(null);
+  
+  // State for managing node, edges, selected node
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const { screenToFlowPosition } = useReactFlow();
@@ -48,20 +51,27 @@ const AddNodeOnEdgeDrop = () => {
   const [selectedOption, setSelectedOption] = useState("private");
   const shareableLink = useShareHandler(nodes, edges);
   const [unsavedChanges, setUnsavedChanges] = useState(false);
+  const [mindmapId, setMindmapId] = useState(null); 
+  const [prevMindmapId, setPrevMindmapId] = useState(null);
 
+  // Dynamically get the mindmapId based on the current mindmap
+  const mindmapIdRef = useRef(null);
+  const getLocalStorageKey = (prefix, mindmapId) => `${prefix}_${mindmapId}`;
+
+  // Funtion to handle unsave change when leaving this page
   const handleUnsavedChanges = useCallback(
     (event) => {
       if (unsavedChanges) {
-        const message =
-          "You have unsaved changes. Are you sure you want to leave?";
-        event.returnValue = message; // Standard for most browsers
-        return message; // For some older browsers
+        const message = "You have unsaved changes. Are you sure you want to leave?";
+        event.returnValue = message;
+        return message;
       }
     },
-    [unsavedChanges]
+    [unsavedChanges, mindmapIdRef.current]
   );
 
-  useEffect(() => {
+  // Effect to add beforeload event listener for handling unsave changes
+   useEffect(() => {
     const handleBeforeUnload = (event) => handleUnsavedChanges(event);
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
@@ -69,64 +79,147 @@ const AddNodeOnEdgeDrop = () => {
     };
   }, [handleUnsavedChanges]);
 
+  // Function to toggle the visibility of the sharing modal
   const toggleModal = () => {
     setModalVisible(!modalVisible);
   };
 
+  // Funtion to close the sharing modal
   const closeModal = () => {
     setModalVisible(false);
   };
-
+  // Function to handle radio button change for sharing options
   const handleOptionChange = (option) => {
     setSelectedOption(option);
   };
-
+  // Effect to set the default sharing option when the component mounts
   useEffect(() => {
     setSelectedOption("private");
   }, []);
 
-  const handleClickSave = () => {
-    const savedData = {
-      nodes: nodes.map((node) => ({
-        id: node.id,
-        data: node.data,
-        position: node.position,
-        // Add other properties as needed
-      })),
-      edges: edges.map((edge) => ({
-        id: edge.id,
-        source: edge.source,
-        target: edge.target,
-        // Add other properties as needed
-      })),
-    };
+ // Thay đổi state khi component mount để lấy dữ liệu từ localStorage
+ useEffect(() => {
+  const storedMindmapId = localStorage.getItem("currentMindmapId");
 
-    // Save to localStorage
-    localStorage.setItem("mindMapData", JSON.stringify(savedData));
+  if (!mindmapId) {
+    if (storedMindmapId) {
+      setMindmapId(storedMindmapId);
+    } else {
+      const newMindmapId = uuidv4();
+      setMindmapId(newMindmapId);
+      localStorage.setItem("currentMindmapId", newMindmapId);
+      updateMindmaps(newMindmapId);
+    }
+  }
+}, [mindmapId]);
 
-    console.log("Saved Data:", savedData);
-    toast.success("Đã lưu thành công!", {
-      position: toast.POSITION.TOP_RIGHT,
-    });
+useEffect(() => {
+  if (mindmapIdRef.current) {
+    const storedData = localStorage.getItem(`mindMapData_${mindmapIdRef.current}`);
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+      setNodes(parsedData.nodes);
+      setEdges(parsedData.edges);
+    }
+  }
+}, [mindmapIdRef.current]);
 
-    setUnsavedChanges(false);
+const getMindmaps = () => {
+  // Lấy danh sách mindmaps từ localStorage
+  return JSON.parse(localStorage.getItem("mindmaps")) || [];
+};
+
+const updateMindmaps = (newMindmapId) => {
+  // Lưu danh sách mindmaps vào localStorage
+  const mindmaps = getMindmaps();
+  if (!mindmaps.includes(newMindmapId)) {
+    mindmaps.push(newMindmapId);
+    localStorage.setItem("mindmaps", JSON.stringify(mindmaps));
+  }
+};
+
+useEffect(() => {
+  const storedMindmapId = localStorage.getItem("currentMindmapId");
+
+  if (!mindmapId) {
+    if (storedMindmapId) {
+      setMindmapId(storedMindmapId);
+    } else {
+      const newMindmapId = uuidv4();
+      setMindmapId(newMindmapId);
+      localStorage.setItem("currentMindmapId", newMindmapId);
+      updateMindmaps(newMindmapId);
+    }
+  }
+}, [mindmapId]);
+
+// Thay đổi state khi component mount để lấy dữ liệu từ localStorage
+useEffect(() => {
+  if (mindmapId) {
+    const storedData = localStorage.getItem(`mindMapData_${mindmapId}`);
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+      setNodes(parsedData.nodes);
+      setEdges(parsedData.edges);
+    }
+  }
+}, [mindmapId]);
+
+// Funtion to handle saving the mindmap
+const handleClickSave = () => {
+  let newMindmapId = mindmapIdRef.current;
+
+  if (!newMindmapId) {
+    newMindmapId = uuidv4();
+    mindmapIdRef.current = newMindmapId;
+    localStorage.setItem("currentMindmapId", newMindmapId);
+    updateMindmaps(newMindmapId);
+  }
+
+  const savedData = {
+    nodes: nodes.map((node) => ({
+      id: node.id,
+      data: node.data,
+      position: node.position,
+    })),
+    edges: edges.map((edge) => ({
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+    })),
   };
 
+  localStorage.setItem(getLocalStorageKey("mindMapData", newMindmapId), JSON.stringify(savedData));
+
+  console.log(`Saved Data for Mindmap ${newMindmapId}:`, savedData);
+  toast.success("Đã lưu thành công!", {
+    position: toast.POSITION.TOP_RIGHT,
+  });
+
+  setUnsavedChanges(false);
+
+  // Xóa dữ liệu mindmap cũ khỏi localStorage nếu có
+  localStorage.removeItem(getLocalStorageKey("mindMapData", mindmapIdRef.current));
+};
+
+  // Callback function when connecting nodes
   const onConnect = useCallback((params) => {
     connectingNodeId.current = null;
     setEdges((eds) => addEdge(params, eds));
   }, []);
 
+   // Callback function when starting to connect nodes
   const onConnectStart = useCallback((_, { nodeId }) => {
     connectingNodeId.current = nodeId;
   }, []);
 
   const MAX_LABEL_LENGTH = 20; // Số ký tự tối đa cho Label
 
+  // Callback function when ending the connection of nodes
   const onConnectEnd = useCallback(
     (event) => {
       if (!connectingNodeId.current) return;
-      const id = nanoid(); // Generate a unique ID
+      const id = getId(); // Generate a unique ID using uuid
       const targetIsPane = event.target.classList.contains("react-flow__pane");
       if (targetIsPane) {
         const id = getId();
@@ -154,6 +247,8 @@ const AddNodeOnEdgeDrop = () => {
     [screenToFlowPosition]
   );
 
+
+  // Callback function when a node is clicked
   const onNodeClick = useCallback(
     (event, node) => {
       event.preventDefault();
@@ -162,10 +257,12 @@ const AddNodeOnEdgeDrop = () => {
     [setSelectedNodeId]
   );
 
+  // Callback function when input for node label loses focus
   const onInputBlur = useCallback(() => {
     setSelectedNodeId(null);
   }, [setSelectedNodeId]);
 
+  // Callback function when input for node label changes
   const onInputChange = useCallback(
     (event) => {
       const inputValue = event.target.value;
@@ -356,7 +453,7 @@ const AddNodeOnEdgeDrop = () => {
                           id="share-input"
                           className="peer h-10 w-full rounded-md bg-gray-50 drop-shadow-sm transition-all duration-200 ease-in-out focus:bg-white focus:ring-2 focus:ring-blue-400 outline-none"
                           type="url"
-                          value="https://mind-map-rosy.vercel.app/MindMap"
+                          value={`https://mind-map-rosy.vercel.app/MindMap/${id}`}
                           readOnly
                         />
                       </div>

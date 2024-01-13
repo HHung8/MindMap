@@ -1,19 +1,16 @@
 "use client";
-
 // pages/Login.js
 import Link from "next/link";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
-import { nanoid } from "nanoid";
-// import { useRouter } from 'next/router';
+import { v4 as uuidv4 } from "uuid";
 
 const Login = () => {
   const { user, error, isLoading } = useUser();
   const [mindMaps, setMindMaps] = useState([]);
   const [newMindMap, setNewMindMap] = useState(null);
-  // const router = useRouter();
 
   useEffect(() => {
     const storedMindMaps = localStorage.getItem("mindMaps");
@@ -48,7 +45,7 @@ const Login = () => {
 
   const handleAddMindMap = async () => {
     const newMap = {
-      id: nanoid(),
+      id: uuidv4(),
       name: "MindMap Không Có Tên",
       description: "Chưa có mô tả",
       createdAt: new Date().toLocaleString(),
@@ -58,12 +55,9 @@ const Login = () => {
     const updatedMindMaps = [...mindMaps, newMap];
     saveToLocalStorage(updatedMindMaps);
 
-    // Construct the link with the dynamic ID
-    const link = `/MindMap/${newMap.id}`;
-
-    // Use window.location.href to navigate
-    window.location.href = link;
+    window.location.href=`/MindMap/${newMap.id}`
   };
+
 
   const handleDeleteMindMap = (id) => {
     // Lọc mindmap cần xóa
@@ -90,16 +84,16 @@ const Login = () => {
               <Link href="/api/auth/logout" className="text-white">
                 Logout
               </Link>
-            </div>
+            </div>  
           </div>
-          <div className="flex py-4">
+         <div className="flex py-4">
             <div
               className="bg-blue-900 text-white px-6 p-2 rounded-md cursor-pointer"
               onClick={handleAddMindMap}
             >
               新しく追加する
             </div>
-          </div>
+        </div>
           <div className="px-4">
             <div className="flex items-center py-2">
               <span className="w-1/6 text-center">
